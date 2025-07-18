@@ -15,6 +15,12 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    'pacoca_api_url' => env('PACOCA_API_URL', 'http://localhost'),
+    'front_url' => env('FRONTEND_URL', 'http://localhost'),
+    'allowed_ips' => env('ALLOWED_IPS', ''),
+    'uptimerobot_ips' => env('UPTIMEROBOT_IPS', ''),
+    'frontend_urls' => env('FRONTEND_URLS', ''),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment
