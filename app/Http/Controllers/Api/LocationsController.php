@@ -29,7 +29,7 @@ class LocationsController extends Controller
             "user_id" => $request->user_id,
         ]);
 
-        return response()->json(["success" => true, "location" => $location, "message" => "Local cadastrado, meu amor 💖"]);
+        return response()->json(["success" => true, "location" => $location, "message" => "Local cadastrado, meu amor 💖 (ele vai aparecer no mapa depois)"]);
        
     }
 
