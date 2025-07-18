@@ -61,6 +61,7 @@ class CheckUserToken
         // }
 
         $response = Http::withToken($token)->acceptJson()->post(config("app.pacoca_api_url") . "/verify-token");
+        \Log::error($response->json());
 
         if ($response->failed() || empty($response->json('valid'))) {
             throw new \Exception("Token inválido (prod)");
