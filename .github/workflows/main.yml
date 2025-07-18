@@ -36,10 +36,10 @@ jobs:
         port: ${{ secrets.REMOTE_PORT }}
         script: |
             cd ${{secrets.TARGET_PRODUCTION}}
-            ./composer.phar install --no-interaction --prefer-dist --optimize-autoloader
             php artisan cache:clear
             php artisan config:clear
             php artisan route:clear
             php artisan view:clear
+            ./composer.phar install --no-interaction --prefer-dist --optimize-autoloader
             php artisan migrate
-            php artisan config:cache 
+            php artisan config:cache
