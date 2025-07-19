@@ -6,14 +6,49 @@ use App\Http\Controllers\Controller;
 use App\Models\Location;
 use App\Models\LocationUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
 
 class LocationsController extends Controller
 {
     public function index(Request $request){
-        $userId = $request->get('user_id'); // se quiser filtrar por usuário
-        $locations = Location::when($userId, fn($q) => $q->where('user_id', $userId))->get();
+        $authUserId = $request->get('user_id');
+
+        $locations = Location::where(function ($query) use ($authUserId) {
+            $query->where('user_id', $authUserId)
+                ->orWhereExists(function ($q) use ($authUserId) {
+                    $q->select(DB::raw(1))
+                        ->from('location_users')
+                        ->whereColumn('location_users.location_id', 'locations.id')
+                        ->where('location_users.user_id', $authUserId);
+                });
+        })->get();
 
         return response()->json($locations);
+    }
+
+
+    public function find(Request $request, $id){
+        $authUserId = $request->get('user_id');
+
+        $location = Location::where('id', $id)
+            ->where(function ($query) use ($authUserId) {
+                $query->where('user_id', $authUserId)
+                    ->orWhereExists(function ($q) use ($authUserId) {
+                        $q->select(DB::raw(1))
+                            ->from('location_users')
+                            ->whereColumn('location_users.location_id', 'locations.id')
+                            ->where('location_users.user_id', $authUserId);
+                    });
+            })
+            ->first();
+
+        if (!$location) {
+            return response()->json(['message' => 'Local não encontrado ou não autorizado'], 403);
+        }
+
+        $location_users = LocationUser::where("location_id", $location->id)->get();
+        return response()->json(["location" => $location, "location_users" => $location_users]);
     }
 
 
@@ -22,11 +57,11 @@ class LocationsController extends Controller
 
         $data = $request->validate([
             'user_id'     => 'required|integer',
-            'title'       => 'required|string|max:255',
+            'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'date'        => 'nullable|date',
-            'latitude'    => 'nullable|numeric',
-            'longitude'   => 'nullable|numeric',
+            'date' => 'nullable|date',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
         ]);
 
         $data['user_id'] = $userId;
@@ -41,4 +76,23 @@ class LocationsController extends Controller
        
     }
 
+    public function update(Request $request, $id){
+        $location = Location::findOrFail($id);
+
+        $data = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'date' => 'nullable|date',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+        ]);
+
+        $location->update($data);
+
+        return response()->json([
+            "success" => true,
+            "message" => "Local atualizado com sucesso 💖",
+            "location" => $location,
+        ]);
+    }
 }
