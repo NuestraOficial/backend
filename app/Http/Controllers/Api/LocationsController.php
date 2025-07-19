@@ -95,4 +95,30 @@ class LocationsController extends Controller
             "location" => $location,
         ]);
     }
+
+    public function delete(Request $request, $id){
+        $authUserId = $request->get('user_id');
+
+        $location = Location::where('id', $id)
+            ->where(function ($query) use ($authUserId) {
+                $query->where('user_id', $authUserId)
+                    ->orWhereExists(function ($q) use ($authUserId) {
+                        $q->select(DB::raw(1))
+                            ->from('location_users')
+                            ->whereColumn('location_users.location_id', 'locations.id')
+                            ->where('location_users.user_id', $authUserId);
+                    });
+            })
+            ->first();
+
+        if (!$location) {
+            return response()->json(['message' => 'Local não encontrado ou não autorizado'], 403);
+        }
+
+        // Remove o relacionamento antes de deletar (se existir)
+        DB::table('location_users')->where('location_id', $location->id)->delete();
+        $location->delete();
+
+        return response()->json(['message' => 'Local excluído com sucesso 💔']);
+    }
 }

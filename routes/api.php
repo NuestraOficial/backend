@@ -14,5 +14,6 @@ Route::middleware(['check_user_token'])->group(function () {
         Route::post("", [LocationsController::class, "store"]);
         Route::get('/{id}', [LocationsController::class, 'find']);
         Route::patch('/{id}', [LocationsController::class, 'update']);
+        Route::delete('/{id}', [LocationsController::class, 'delete']);
     });
 });
