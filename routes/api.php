@@ -10,6 +10,7 @@ Route::middleware(['check_user_token'])->group(function () {
     });
 
     Route::group(["prefix" => "locations"], function(){
+        Route::get("", [LocationsController::class, "index"]);
         Route::post("", [LocationsController::class, "store"]);
     });
 });

@@ -9,6 +9,14 @@ use Illuminate\Http\Request;
 
 class LocationsController extends Controller
 {
+    public function index(Request $request){
+        $userId = $request->get('user_id'); // se quiser filtrar por usuário
+        $locations = Location::when($userId, fn($q) => $q->where('user_id', $userId))->get();
+
+        return response()->json($locations);
+    }
+
+
     public function store(Request $request){
         $userId = $request->get('user_id');
 
