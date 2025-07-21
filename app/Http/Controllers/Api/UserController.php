@@ -36,4 +36,10 @@ class UserController extends Controller
             'token_id' => $record->id,
         ];
     }
+
+    public static function personalizedMessage($userId, $defaultMessage, $loveMessage){
+        // Verifica se é sua namorada (usuário ID 5)
+        return $userId == 5 ? $loveMessage : $defaultMessage;
+    }
+
 }

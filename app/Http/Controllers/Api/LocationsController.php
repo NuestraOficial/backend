@@ -44,7 +44,8 @@ class LocationsController extends Controller
             ->first();
 
         if (!$location) {
-            return response()->json(['message' => 'Local não encontrado ou não autorizado'], 403);
+            $message = UserController::personalizedMessage($authUserId, "Local não encontrado ou não autorizado!", "Local não encontrado ou não autorizado, meu amorzinho!");
+            return response()->json(['message' =>  $message], 403);
         }
 
         $location_users = LocationUser::where("location_id", $location->id)->get();
@@ -56,7 +57,7 @@ class LocationsController extends Controller
         $userId = $request->get('user_id');
 
         $data = $request->validate([
-            'user_id'     => 'required|integer',
+            'id_user'     => 'required|integer',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'date' => 'nullable|date',
@@ -69,15 +70,33 @@ class LocationsController extends Controller
         $location = Location::create($data);
         $location = LocationUser::create([
             "location_id" => $location->id,
-            "user_id" => $request->user_id,
+            "user_id" => $request->id_user,
         ]);
 
-        return response()->json(["success" => true, "location" => $location, "message" => "Local cadastrado, meu amor 💖 (veja ele no mapa abaixo)"]);
-       
+        
+        $message = UserController::personalizedMessage($userId, "Local cadastrado (veja ele no mapa abaixo)!", "Local cadastrado, meu amor 💖 (veja ele no mapa abaixo)");
+        return response()->json(["success" => true, "location" => $location, "message" => $message]);
     }
 
     public function update(Request $request, $id){
-        $location = Location::findOrFail($id);
+        $userId = $request->get('user_id');
+        // $location = Location::findOrFail($id);
+        $location = Location::where('id', $id)
+            ->where(function ($query) use ($userId) {
+                $query->where('user_id', $userId)
+                    ->orWhereExists(function ($q) use ($userId) {
+                        $q->select(DB::raw(1))
+                            ->from('location_users')
+                            ->whereColumn('location_users.location_id', 'locations.id')
+                            ->where('location_users.user_id', $userId);
+                    });
+            })
+            ->first();
+
+        if (!$location) {
+            $message = UserController::personalizedMessage($userId, "Local não encontrado ou não autorizado!", "Local não encontrado ou não autorizado, meu amorzinho!");
+            return response()->json(['message' =>  $message], 403);
+        }
 
         $data = $request->validate([
             'title' => 'required|string|max:255',
@@ -89,9 +108,11 @@ class LocationsController extends Controller
 
         $location->update($data);
 
+        
+        $message = UserController::personalizedMessage($userId, "Local atualizado (veja ele no mapa abaixo)!", "Local atualizado, meu amor 💖 (veja ele no mapa abaixo)");
         return response()->json([
             "success" => true,
-            "message" => "Local atualizado, meu amor 💖 (veja ele no mapa abaixo)",
+            "message" => $message,
             "location" => $location,
         ]);
     }
@@ -112,13 +133,15 @@ class LocationsController extends Controller
             ->first();
 
         if (!$location) {
-            return response()->json(['message' => 'Local não encontrado ou não autorizado'], 403);
+            $message = UserController::personalizedMessage($authUserId, "Local não encontrado ou não autorizado!", "Local não encontrado ou não autorizado, meu amorzinho!");
+            return response()->json(['message' =>  $message], 403);
         }
 
         // Remove o relacionamento antes de deletar (se existir)
         DB::table('location_users')->where('location_id', $location->id)->delete();
         $location->delete();
 
-        return response()->json(['message' => 'Local excluído com sucesso 💔']);
+        $message = UserController::personalizedMessage($authUserId, "Local excluído com sucesso 💔", "Local excluído com sucesso, meu amor 💔");
+        return response()->json(['message' => '']);
     }
 }
