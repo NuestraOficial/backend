@@ -60,6 +60,7 @@ class LocationsController extends Controller
             'id_user'     => 'required|integer',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
+            'name' => 'nullable|string|max:255',
             'date' => 'nullable|date',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
@@ -102,6 +103,7 @@ class LocationsController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'date' => 'nullable|date',
+            'name' => 'nullable|string|max:255',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
         ]);
