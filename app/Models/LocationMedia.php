@@ -12,4 +12,17 @@ class LocationMedia extends Model
     {
         return $this->belongsTo(Location::class);
     }
+
+    protected static function boot(){
+        parent::boot();
+
+        static::deleting(function ($image) {
+            $path = public_path($image->path);
+
+            if (file_exists($path)) {
+                unlink($path);
+            }
+        });
+    }
+
 }

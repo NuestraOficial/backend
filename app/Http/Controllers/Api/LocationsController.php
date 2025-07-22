@@ -80,17 +80,19 @@ class LocationsController extends Controller
         if ($request->hasFile('media')) {
             foreach ($request->file('media') as $file) {
                 $type = str_starts_with($file->getMimeType(), 'video') ? 'video' : 'image';
+                // $path = $file->store('locations/media', 'public');
 
-                $path = $file->store('locations/media', 'public');
+                $imgName = uniqid() . "." . $file->extension();
+                $path = public_path('files/locations');
+                $file->move($path, $imgName);
 
                 LocationMedia::create([
                     'location_id' => $location->id,
                     'type' => $type,
-                    'path' => $path,
+                    'path' => "files/locations/" . $imgName,
                 ]);
             }
         }
-
         
         $message = UserController::personalizedMessage($userId, "Local cadastrado (veja ele no mapa abaixo)!", "Local cadastrado, meu amor 💖 (veja ele no mapa abaixo)");
         return response()->json(["success" => true, "location" => $location, "message" => $message]);
@@ -132,27 +134,31 @@ class LocationsController extends Controller
             foreach ($request->file('media') as $file) {
                 $type = str_starts_with($file->getMimeType(), 'video') ? 'video' : 'image';
 
-                $path = $file->store('locations/media', 'public');
+                // $path = $file->store('locations/media', 'public');
+                $imgName = uniqid() . "." . $file->extension();
+                $path = public_path('files/locations');
+                $file->move($path, $imgName);
 
                 LocationMedia::create([
                     'location_id' => $location->id,
                     'type' => $type,
-                    'path' => $path,
+                    'path' => "files/locations/" . $imgName,
                 ]);
             }
         }
 
         $imagesToDelete = json_decode($request->input('images_to_delete'), true);
 
-        \Log::info($imagesToDelete);
-
         foreach ($imagesToDelete as $images) {
-            \Log::info($images);
-            // Excluir do storage e do banco, exemplo:
-            $fileName = basename($images["path"]);
-            Storage::disk('public')->delete("locations/$fileName");
+            // Caminho absoluto no sistema de arquivos
+            $fullPath = public_path($images["path"]);
 
-            // Também remove do banco, se necessário
+            // Apaga o arquivo fisicamente se existir
+            if (file_exists($fullPath)) {
+                unlink($fullPath);
+            }
+
+            // Remove do banco
             $location->media()->where('path', $images["path"])->delete();
         }
 
