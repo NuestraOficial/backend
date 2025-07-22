@@ -13,7 +13,7 @@ Route::middleware(['check_user_token'])->group(function () {
         Route::get("", [LocationsController::class, "index"]);
         Route::post("", [LocationsController::class, "store"]);
         Route::get('/{id}', [LocationsController::class, 'find']);
-        Route::patch('/{id}', [LocationsController::class, 'update']);
+        Route::post('/{id}', [LocationsController::class, 'update']);
         Route::delete('/{id}', [LocationsController::class, 'delete']);
     });
 });

@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Location;
+use App\Models\LocationMedia;
 use App\Models\LocationUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Storage;
 
 class LocationsController extends Controller
 {
@@ -31,7 +32,7 @@ class LocationsController extends Controller
     public function find(Request $request, $id){
         $authUserId = $request->get('user_id');
 
-        $location = Location::where('id', $id)
+        $location = Location::where('id', $id)->with("media")
             ->where(function ($query) use ($authUserId) {
                 $query->where('user_id', $authUserId)
                     ->orWhereExists(function ($q) use ($authUserId) {
@@ -64,15 +65,31 @@ class LocationsController extends Controller
             'date' => 'nullable|date',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
+            'media.*' => 'file|mimes:jpeg,png,jpg,mp4,webm|max:10240' // até 10MB por arquivo
         ]);
 
         $data['user_id'] = $userId;
 
         $location = Location::create($data);
-        $location = LocationUser::create([
+        LocationUser::create([
             "location_id" => $location->id,
             "user_id" => $request->id_user,
         ]);
+
+        // Salvar mídias
+        if ($request->hasFile('media')) {
+            foreach ($request->file('media') as $file) {
+                $type = str_starts_with($file->getMimeType(), 'video') ? 'video' : 'image';
+
+                $path = $file->store('locations/media', 'public');
+
+                LocationMedia::create([
+                    'location_id' => $location->id,
+                    'type' => $type,
+                    'path' => $path,
+                ]);
+            }
+        }
 
         
         $message = UserController::personalizedMessage($userId, "Local cadastrado (veja ele no mapa abaixo)!", "Local cadastrado, meu amor 💖 (veja ele no mapa abaixo)");
@@ -80,6 +97,15 @@ class LocationsController extends Controller
     }
 
     public function update(Request $request, $id){
+        $data = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'date' => 'nullable|date',
+            'name' => 'nullable|string|max:255',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+        ]);
+
         $userId = $request->get('user_id');
         // $location = Location::findOrFail($id);
         $location = Location::where('id', $id)
@@ -99,16 +125,36 @@ class LocationsController extends Controller
             return response()->json(['message' =>  $message], 403);
         }
 
-        $data = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'date' => 'nullable|date',
-            'name' => 'nullable|string|max:255',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-        ]);
-
         $location->update($data);
+
+        // Salvar mídias
+        if ($request->hasFile('media')) {
+            foreach ($request->file('media') as $file) {
+                $type = str_starts_with($file->getMimeType(), 'video') ? 'video' : 'image';
+
+                $path = $file->store('locations/media', 'public');
+
+                LocationMedia::create([
+                    'location_id' => $location->id,
+                    'type' => $type,
+                    'path' => $path,
+                ]);
+            }
+        }
+
+        $imagesToDelete = json_decode($request->input('images_to_delete'), true);
+
+        \Log::info($imagesToDelete);
+
+        foreach ($imagesToDelete as $images) {
+            \Log::info($images);
+            // Excluir do storage e do banco, exemplo:
+            $fileName = basename($images["path"]);
+            Storage::disk('public')->delete("locations/$fileName");
+
+            // Também remove do banco, se necessário
+            $location->media()->where('path', $images["path"])->delete();
+        }
 
         
         $message = UserController::personalizedMessage($userId, "Local atualizado (veja ele no mapa abaixo)!", "Local atualizado, meu amor 💖 (veja ele no mapa abaixo)");
