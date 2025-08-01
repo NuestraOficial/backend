@@ -180,15 +180,16 @@ class LocationsController extends Controller
 
     public function delete(Request $request, $id){
         $authUserId = $request->get('user_id');
+        $user_uuid = $request->get('user_uuid');
 
         $location = Location::where('id', $id)
-            ->where(function ($query) use ($authUserId) {
-                $query->where('user_id', $authUserId)
-                    ->orWhereExists(function ($q) use ($authUserId) {
+            ->where(function ($query) use ($user_uuid) {
+                $query->where('user_uuid', $user_uuid)
+                    ->orWhereExists(function ($q) use ($user_uuid) {
                         $q->select(DB::raw(1))
                             ->from('location_users')
                             ->whereColumn('location_users.location_id', 'locations.id')
-                            ->where('location_users.user_id', $authUserId);
+                            ->where('location_users.user_uuid', $user_uuid);
                     });
             })
             ->first();
