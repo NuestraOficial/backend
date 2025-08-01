@@ -7,6 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class LocationUser extends Model
 {
     protected $fillable = [
-        "location_id", "user_id"
+        "location_id", "user_id", "user_uuid"
     ];
 }

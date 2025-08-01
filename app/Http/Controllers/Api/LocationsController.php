@@ -13,15 +13,15 @@ use Illuminate\Support\Facades\Storage;
 class LocationsController extends Controller
 {
     public function index(Request $request){
-        $authUserId = $request->get('user_id');
+        $user_uuid = $request->get('user_uuid');
 
-        $locations = Location::where(function ($query) use ($authUserId) {
-            $query->where('user_id', $authUserId)
-                ->orWhereExists(function ($q) use ($authUserId) {
+       $locations = Location::where(function ($query) use ($user_uuid) {
+            $query->where('user_uuid', $user_uuid)
+                ->orWhereExists(function ($q) use ($user_uuid) {
                     $q->select(DB::raw(1))
                         ->from('location_users')
                         ->whereColumn('location_users.location_id', 'locations.id')
-                        ->where('location_users.user_id', $authUserId);
+                        ->where('location_users.user_uuid', $user_uuid);
                 });
         })->orderBy("date")->get();
 
@@ -29,23 +29,26 @@ class LocationsController extends Controller
     }
 
 
+
     public function find(Request $request, $id){
-        $authUserId = $request->get('user_id');
+        $auth = $this->getAuthUserIdentifier($request);
+
 
         $location = Location::where('id', $id)->with("media")
-            ->where(function ($query) use ($authUserId) {
-                $query->where('user_id', $authUserId)
-                    ->orWhereExists(function ($q) use ($authUserId) {
+           ->where(function ($query) use ($auth) {
+                $query->where($auth['column'], $auth['value'])
+                    ->orWhereExists(function ($q) use ($auth) {
                         $q->select(DB::raw(1))
                             ->from('location_users')
                             ->whereColumn('location_users.location_id', 'locations.id')
-                            ->where('location_users.user_id', $authUserId);
+                            ->where("location_users.{$auth['column']}", $auth['value']);
                     });
             })
+
             ->first();
 
         if (!$location) {
-            $message = UserController::personalizedMessage($authUserId, "Local não encontrado ou não autorizado!", "Local não encontrado ou não autorizado, meu amorzinho!");
+            $message = UserController::personalizedMessage($auth, "Local não encontrado!", "Local não encontrado, meu amorzinho!");
             return response()->json(['message' =>  $message], 403);
         }
 
@@ -56,9 +59,11 @@ class LocationsController extends Controller
 
     public function store(Request $request){
         $userId = $request->get('user_id');
+        $user_uuid = $request->get('user_uuid');
 
         $data = $request->validate([
-            'id_user'     => 'required|integer',
+            'other_user_uuid' => 'nullable|string',
+            // 'id_user' => 'nullable|integer',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'name' => 'nullable|string|max:255',
@@ -68,12 +73,13 @@ class LocationsController extends Controller
             'media.*' => 'file|mimes:jpeg,png,jpg,mp4,webm|max:10240' // até 10MB por arquivo
         ]);
 
-        $data['user_id'] = $userId;
+        // $data['user_id'] = $userId;
+        $data['user_uuid'] = $user_uuid;
 
         $location = Location::create($data);
         LocationUser::create([
             "location_id" => $location->id,
-            "user_id" => $request->id_user,
+            "user_uuid" => $request->other_user_uuid,
         ]);
 
         // Salvar mídias
@@ -108,22 +114,23 @@ class LocationsController extends Controller
             'longitude' => 'nullable|numeric',
         ]);
 
+        $user_uuid = $request->get('user_uuid');
         $userId = $request->get('user_id');
         // $location = Location::findOrFail($id);
         $location = Location::where('id', $id)
-            ->where(function ($query) use ($userId) {
-                $query->where('user_id', $userId)
-                    ->orWhereExists(function ($q) use ($userId) {
+            ->where(function ($query) use ($user_uuid) {
+                $query->where('user_uuid', $user_uuid)
+                    ->orWhereExists(function ($q) use ($user_uuid) {
                         $q->select(DB::raw(1))
                             ->from('location_users')
                             ->whereColumn('location_users.location_id', 'locations.id')
-                            ->where('location_users.user_id', $userId);
+                            ->where('location_users.user_uuid', $user_uuid);
                     });
             })
             ->first();
 
         if (!$location) {
-            $message = UserController::personalizedMessage($userId, "Local não encontrado ou não autorizado!", "Local não encontrado ou não autorizado, meu amorzinho!");
+            $message = UserController::personalizedMessage($userId, "Local não encontrado!", "Local não encontrado, meu amorzinho!");
             return response()->json(['message' =>  $message], 403);
         }
 
@@ -187,7 +194,7 @@ class LocationsController extends Controller
             ->first();
 
         if (!$location) {
-            $message = UserController::personalizedMessage($authUserId, "Local não encontrado ou não autorizado!", "Local não encontrado ou não autorizado, meu amorzinho!");
+            $message = UserController::personalizedMessage($authUserId, "Local não encontrado!", "Local não encontrado, meu amorzinho!");
             return response()->json(['message' =>  $message], 403);
         }
 
@@ -198,4 +205,13 @@ class LocationsController extends Controller
         $message = UserController::personalizedMessage($authUserId, "Local excluído com sucesso 💔", "Local excluído com sucesso, meu amor 💔");
         return response()->json(['message' => '']);
     }
+
+    private function getAuthUserIdentifier(Request $request){
+        if ($request->has('user_uuid')) {
+            return ['column' => 'user_uuid', 'value' => $request->get('user_uuid')];
+        }
+
+        return ['column' => 'user_id', 'value' => $request->get('user_id')];
+    }
+
 }

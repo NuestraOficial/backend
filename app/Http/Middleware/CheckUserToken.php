@@ -33,6 +33,7 @@ class CheckUserToken
 
             $request->merge([
                 'user_id' => $user['id'],
+                'user_uuid' => $user['nuestra_uuid'],
                 'user' => [
                     'id' => $user['id'],
                     'name' => $user['name'],
