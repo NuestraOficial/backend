@@ -50,7 +50,7 @@ class MediasController extends Controller
             $folder = Folder::find($request->folder_id);
         }
 
-        if(!$request->has("folder_id") || $request->folder_id <= 0 && $request->has("folder_name")){
+        if((!$request->has("folder_id") || $request->folder_id <= 0) && $request->folder_name){
             $folder = Folder::create([
                 "user_uuid" => $user_uuid,
                 "name" => $request->folder_name, 
@@ -85,8 +85,8 @@ class MediasController extends Controller
             }
         }
 
-        $message = UserController::personalizedMessage($userId, "Registro cadastradi!", "Registro cadastrado, meu amor 💖");
-        return response()->json(["success" => true, "folder" => $folder, "message" => $message]);
+        $message = UserController::personalizedMessage($userId, "Registro cadastrado!", "Registro cadastrado, meu amor 💖");
+        return response()->json(["success" => true, "folder" => isset($folder) ? $folder : null, "message" => $message]);
     }
     
     private function getAuthUserIdentifier(Request $request){
