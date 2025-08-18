@@ -31,6 +31,10 @@ class CheckUserToken
                 return response()->json(['message' => 'Usuário inválido'], 401);
             }
 
+            if($user['id'] != 5 && $user['id'] != 1){
+                return response()->json(['message' => 'Acesso negado'], 403);
+            }
+
             $request->merge([
                 'user_id' => $user['id'],
                 'user_uuid' => $user['nuestra_uuid'],
