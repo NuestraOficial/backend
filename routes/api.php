@@ -30,5 +30,6 @@ Route::middleware(['check_user_token'])->group(function () {
 
     Route::group(["prefix" => "folders"], function(){
         Route::get("", [FoldersController::class, "index"]);
+        Route::delete("", [FoldersController::class, "delete"]);
     });
 });
