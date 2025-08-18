@@ -11,8 +11,6 @@ use Illuminate\Http\Request;
 class MediasController extends Controller
 {
     public function index(Request $request){
-        $auth = $this->getAuthUserIdentifier($request);
-
         $medias = FolderMedia::with("folder")->get();
 
         return response()->json(["medias" => $medias]);
@@ -54,6 +52,8 @@ class MediasController extends Controller
 
         if($request->has("folder_id") && $request->folder_id >0){
             $folder = Folder::find($request->folder_id);
+            $folder->total_files = $folder->total_files + count($request->media);
+            $folder->save();
         }
 
         if((!$request->has("folder_id") || $request->folder_id <= 0) && $request->folder_name){
