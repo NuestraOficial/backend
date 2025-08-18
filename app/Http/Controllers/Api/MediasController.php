@@ -96,4 +96,12 @@ class MediasController extends Controller
 
         return ['column' => 'user_id', 'value' => $request->get('user_id')];
     }
+
+    public function delete(Request $request) {
+        $ids = $request->input('ids', []);
+        if (!count($ids)) return response()->json(["message" => "Nenhuma pasta selecionada"], 400);
+
+        FolderMedia::whereIn('id', $ids)->delete();
+        return response()->json(["message" => "Pastas removidas com sucesso"]);
+    }
 }
