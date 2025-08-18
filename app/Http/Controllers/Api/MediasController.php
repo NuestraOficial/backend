@@ -31,6 +31,12 @@ class MediasController extends Controller
 
         return response()->json(["medias" => $medias, "folder" => $folder]);
     }
+    
+    public function find(Request $request, $id){
+        $media = FolderMedia::with("folder")->find( $id);
+
+        return response()->json(["media" => $media]);
+    }
 
     public function store(Request $request){
         $userId = $request->get('user_id');
@@ -38,7 +44,7 @@ class MediasController extends Controller
 
         $request->validate([
             'other_user_uuid' => 'nullable|string',
-            'title' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'folder_id' => 'nullable|numeric',
             'folder_name' => 'nullable|string|max:250',
