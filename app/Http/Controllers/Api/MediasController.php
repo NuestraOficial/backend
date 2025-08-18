@@ -95,6 +95,48 @@ class MediasController extends Controller
         $message = UserController::personalizedMessage($userId, "Registro cadastrado!", "Registro cadastrado, meu amor 💖");
         return response()->json(["success" => true, "folder" => isset($folder) ? $folder : null, "message" => $message]);
     }
+
+    public function update(Request $request, $id){
+        $userId = $request->get('user_id');
+        $user_uuid = $request->get("user_uuid");
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'folder_id' => 'nullable|numeric',
+            'folder_name' => 'nullable|string|max:250',
+            'date' => 'nullable|date',
+        ]);
+
+        $media = FolderMedia::find($id);
+        if(!$media) return response()->json(["message" => "Registro não encontrado"], 404);
+
+        if($request->has("folder_id") && $request->folder_id >0){
+            $folder = Folder::find($request->folder_id);
+            if($media->folder_id != $request->folder_id){
+                $folder->total_files = $folder->total_files + count($request->media);
+                $folder->save();
+            }
+        }
+
+        if((!$request->has("folder_id") || $request->folder_id <= 0) && $request->folder_name){
+            $folder = Folder::create([
+                "user_uuid" => $user_uuid,
+                "description" => $request->description, 
+                "name" => $request->folder_name, 
+                "total_files" => count($request->media) 
+            ]);
+
+            FolderUser::create([
+                "folder_id" => $folder->id,
+                "user_uuid" => $request->other_user_uuid,
+            ]);
+        }
+
+        $media->update($request->only(["name", "folder_id", "description", "date"]));
+
+        $message = UserController::personalizedMessage($userId, "Registro atualizado!", "Registro atualizado, meu amor 💖");
+        return response()->json(["success" => true, "folder" => isset($folder) ? $folder : null, "message" => $message]);
+    }
     
     private function getAuthUserIdentifier(Request $request){
         if ($request->has('user_uuid')) {
