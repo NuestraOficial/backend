@@ -59,6 +59,7 @@ class MediasController extends Controller
         if((!$request->has("folder_id") || $request->folder_id <= 0) && $request->folder_name){
             $folder = Folder::create([
                 "user_uuid" => $user_uuid,
+                "description" => $request->description, 
                 "name" => $request->folder_name, 
                 "total_files" => count($request->media) 
             ]);

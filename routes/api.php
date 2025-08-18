@@ -24,13 +24,14 @@ Route::middleware(['check_user_token'])->group(function () {
         Route::post("", [MediasController::class, "store"]);
         Route::get('/{id}', [MediasController::class, 'find']);
         Route::get('/by-folder/{folder_id}', [MediasController::class, 'findByFolderId']);
-        Route::post('/{id}', [MediasController::class, 'update']);
+        // Route::post('/{id}', [MediasController::class, 'update']);
         Route::delete('/{id}', [MediasController::class, 'delete']);
-        Route::delete('/multiple/{id}', [MediasController::class, 'deleteMultiple']);
     });
 
     Route::group(["prefix" => "folders"], function(){
         Route::get("", [FoldersController::class, "index"]);
+        Route::get("/{id}", [FoldersController::class, "find"]);
+        Route::post("/{id}", [FoldersController::class, "update"]);
         Route::delete("", [FoldersController::class, "delete"]);
     });
 });
