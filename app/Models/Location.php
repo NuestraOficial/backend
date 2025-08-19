@@ -11,6 +11,6 @@ class Location extends Model
     ];
 
     public function media(){
-        return $this->hasMany(LocationMedia::class);
+        return $this->hasMany(FolderMedia::class);
     }
 }

@@ -31,7 +31,7 @@ class MediasController extends Controller
     }
     
     public function find(Request $request, $id){
-        $media = FolderMedia::with("folder")->find( $id);
+        $media = FolderMedia::with("folder")->with("location")->find( $id);
 
         return response()->json(["media" => $media]);
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\FolderMedia;
 use App\Models\Location;
 use App\Models\LocationMedia;
 use App\Models\LocationUser;
@@ -89,13 +90,23 @@ class LocationsController extends Controller
                 // $path = $file->store('locations/media', 'public');
 
                 $imgName = uniqid() . "." . $file->extension();
-                $path = public_path('files/locations');
+                $path = public_path('files/medias');
                 $file->move($path, $imgName);
 
-                LocationMedia::create([
+                // LocationMedia::create([
+                //     'location_id' => $location->id,
+                //     'type' => $type,
+                //     'path' => "files/locations/" . $imgName,
+                // ]);
+
+                FolderMedia::create([
                     'location_id' => $location->id,
+                    'user_uuid' => $request->other_user_uuid,
+                    'name' => $request->name,
+                    'description' => $request->description,
+                    'date' => $request->date,
                     'type' => $type,
-                    'path' => "files/locations/" . $imgName,
+                    'path' => "files/medias/" . $imgName,
                 ]);
             }
         }
@@ -143,14 +154,24 @@ class LocationsController extends Controller
 
                 // $path = $file->store('locations/media', 'public');
                 $imgName = uniqid() . "." . $file->extension();
-                $path = public_path('files/locations');
+                $path = public_path('files/medias');
                 $file->move($path, $imgName);
 
-                LocationMedia::create([
+                FolderMedia::create([
                     'location_id' => $location->id,
+                    'user_uuid' => $request->other_user_uuid,
+                    'name' => $request->name,
+                    'description' => $request->description,
+                    'date' => $request->date,
                     'type' => $type,
-                    'path' => "files/locations/" . $imgName,
+                    'path' => "files/medias/" . $imgName,
                 ]);
+
+                // LocationMedia::create([
+                //     'location_id' => $location->id,
+                //     'type' => $type,
+                //     'path' => "files/locations/" . $imgName,
+                // ]);
             }
         }
 
