@@ -123,7 +123,7 @@ class MediasController extends Controller
                 "user_uuid" => $user_uuid,
                 "description" => $request->description, 
                 "name" => $request->folder_name, 
-                "total_files" => count($request->media) 
+                "total_files" => 1 
             ]);
 
             FolderUser::create([
