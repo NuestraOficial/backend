@@ -109,15 +109,17 @@ class MediasController extends Controller
 
         $media = FolderMedia::find($id);
         if(!$media) return response()->json(["message" => "Registro não encontrado"], 404);
+        
+        $media->update($request->only(["name", "folder_id", "description", "date"]));
 
         if($request->has("folder_id") && $request->folder_id >0){
             $folder = Folder::find($request->folder_id);
             if($media->folder_id != $request->folder_id){
-                $folder->total_files = $folder->total_files + count($request->media);
-                $folder->save();
+                $folder->increment("total_files");
             }
         }
 
+        // criando uma pasta
         if((!$request->has("folder_id") || $request->folder_id <= 0) && $request->folder_name){
             $folder = Folder::create([
                 "user_uuid" => $user_uuid,
@@ -130,9 +132,11 @@ class MediasController extends Controller
                 "folder_id" => $folder->id,
                 "user_uuid" => $request->other_user_uuid,
             ]);
+
+            $media->folder_id = $folder->id;
+            $media->save();
         }
 
-        $media->update($request->only(["name", "folder_id", "description", "date"]));
 
         $message = UserController::personalizedMessage($userId, "Registro atualizado!", "Registro atualizado, meu amor 💖");
         return response()->json(["success" => true, "folder" => isset($folder) ? $folder : null, "message" => $message]);
