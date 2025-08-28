@@ -24,7 +24,7 @@ class LocationsController extends Controller
                         ->whereColumn('location_users.location_id', 'locations.id')
                         ->where('location_users.user_uuid', $user_uuid);
                 });
-        })->orderBy("date")->get();
+        })->orderBy("date", "DESC")->get();
 
         return response()->json($locations);
     }

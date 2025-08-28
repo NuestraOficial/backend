@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 class MediasController extends Controller
 {
     public function index(Request $request){
-        $medias = FolderMedia::with("folder")->get();
+        $medias = FolderMedia::with("folder")->orderBy("date", "DESC")->get();
 
         return response()->json(["medias" => $medias]);
     }
