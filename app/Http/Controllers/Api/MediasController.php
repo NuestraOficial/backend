@@ -4,15 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Folder;
-use App\Models\FolderMedia;
 use App\Models\FolderUser;
+use App\Models\Media;
 use Illuminate\Http\Request;
 
 class MediasController extends Controller
 {
     public function index(Request $request){
-        $medias = FolderMedia::with("folder")->orderBy("date", "DESC")->get();
-
+        $medias = Media::with("folder")->orderBy("date", "DESC")->get();
         return response()->json(["medias" => $medias]);
     }
 
@@ -25,14 +24,13 @@ class MediasController extends Controller
             return response()->json(['message' =>  $message], 403);
         }
 
-        $medias = FolderMedia::where('folder_id', $folder_id)->with("folder")->get();
+        $medias = Media::where('folder_id', $folder_id)->with("folder")->get();
 
         return response()->json(["medias" => $medias, "folder" => $folder]);
     }
     
     public function find(Request $request, $id){
-        $media = FolderMedia::with("folder")->with("location")->find( $id);
-
+        $media = Media::with(["folder", "location", "moment"])->find( $id);
         return response()->json(["media" => $media]);
     }
 
@@ -80,7 +78,7 @@ class MediasController extends Controller
                 $path = public_path('files/medias');
                 $file->move($path, $imgName);
 
-                FolderMedia::create([
+                Media::create([
                     'user_uuid' => $request->other_user_uuid,
                     'folder_id' => isset($folder) ? $folder->id : null,
                     'name' => $request->name,
@@ -98,16 +96,17 @@ class MediasController extends Controller
 
     public function update(Request $request, $id){
         $userId = $request->get('user_id');
-        $user_uuid = $request->get("user_uuid");
 
         $request->validate([
             'name' => 'required|string|max:255',
+            'moment_id' => 'nullable|numeric',
+            'location_id' => 'nullable|numeric',
             'folder_id' => 'nullable|numeric',
             'folder_name' => 'nullable|string|max:250',
             'date' => 'nullable|date',
         ]);
 
-        $media = FolderMedia::find($id);
+        $media = Media::find($id);
         if(!$media) return response()->json(["message" => "Registro não encontrado"], 404);
         
         $media->update($request->only(["name", "folder_id", "description", "date"]));
@@ -122,15 +121,10 @@ class MediasController extends Controller
         // criando uma pasta
         if((!$request->has("folder_id") || $request->folder_id <= 0) && $request->folder_name){
             $folder = Folder::create([
-                "user_uuid" => $user_uuid,
+                "user_id" => $userId,
                 "description" => $request->description, 
                 "name" => $request->folder_name, 
                 "total_files" => 1 
-            ]);
-
-            FolderUser::create([
-                "folder_id" => $folder->id,
-                "user_uuid" => $request->other_user_uuid,
             ]);
 
             $media->folder_id = $folder->id;
@@ -154,7 +148,7 @@ class MediasController extends Controller
         $ids = $request->input('ids', []);
         if (!count($ids)) return response()->json(["message" => "Nenhuma pasta selecionada"], 400);
 
-        FolderMedia::whereIn('id', $ids)->delete();
+        Media::whereIn('id', $ids)->delete();
         return response()->json(["message" => "Pastas removidas com sucesso"]);
     }
 }

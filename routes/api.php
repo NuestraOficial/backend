@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\FoldersController;
 use App\Http\Controllers\Api\LocationsController;
 use App\Http\Controllers\Api\MediasController;
+use App\Http\Controllers\Api\MessagesController;
 use App\Http\Controllers\Api\MomentsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -42,5 +43,13 @@ Route::middleware(['check_user_token'])->group(function () {
         Route::get("/{id}", [FoldersController::class, "find"]);
         Route::post("/{id}", [FoldersController::class, "update"]);
         Route::delete("", [FoldersController::class, "delete"]);
+    });
+
+    Route::group(["prefix" => "messages"], function(){
+        Route::get("", [MessagesController::class, "index"]);
+        Route::get("/{id}", [MessagesController::class, "find"]);
+        Route::post("", [MessagesController::class, "store"]);
+        Route::post("/{id}", [MessagesController::class, "update"]);
+        Route::delete("", [MessagesController::class, "delete"]);
     });
 });

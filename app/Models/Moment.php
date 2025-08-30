@@ -13,4 +13,8 @@ class Moment extends Model
     public function location(){
         return $this->belongsTo(Location::class, 'location_id');
     }
+
+    public function medias(){
+        return $this->hasMany(Media::class, 'moment_id');
+    }
 }

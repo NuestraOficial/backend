@@ -10,7 +10,7 @@ class  Location extends Model
         "user_id", "name", "description", "latitude", "longitude"
     ];
 
-    public function media(){
-        return $this->hasMany(FolderMedia::class);
+    public function medias(){
+        return $this->hasMany(Media::class);
     }
 }

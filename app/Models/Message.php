@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Folder extends Model
+class Message extends Model
 {
     public $fillable = [
-        "user_id", "name", "description", "total_files", "cover"
+        "user_id", "from_id", "date", "text"
     ];
 }

@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class FolderMedia extends Model
+class Media extends Model
 {
+    public $table = "medias";
+    
     public $fillable = [
-        "user_uuid", "folder_id", "location_id", "name", "description", "date", "type", "path"
+        "user_id", "folder_id", "location_id", "moment_id", "name", "description", "date", "type", "path"
     ];
 
     public function folder(){
@@ -16,5 +18,9 @@ class FolderMedia extends Model
 
     public function location(){
         return $this->belongsTo(Location::class, "location_id");
+    }
+    
+    public function moment(){
+        return $this->belongsTo(Moment::class, "moment_id");
     }
 }

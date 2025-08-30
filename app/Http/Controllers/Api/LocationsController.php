@@ -43,26 +43,6 @@ class LocationsController extends Controller
         $data['user_id'] = $userId;
         $location = Location::create($data);
         
-        // if ($request->hasFile('media')) {
-        //     foreach ($request->file('media') as $file) {
-        //         $type = str_starts_with($file->getMimeType(), 'video') ? 'video' : 'image';
-
-        //         $imgName = uniqid() . "." . $file->extension();
-        //         $path = public_path('files/medias');
-        //         $file->move($path, $imgName);
-
-        //         FolderMedia::create([
-        //             'location_id' => $location->id,
-        //             'user_uuid' => $request->other_user_uuid,
-        //             'name' => $request->name,
-        //             'description' => $request->description,
-        //             'date' => $request->date,
-        //             'type' => $type,
-        //             'path' => "files/medias/" . $imgName,
-        //         ]);
-        //     }
-        // }
-        
         $message = UserController::personalizedMessage($userId, "Local cadastrado!", "Local cadastrado, meu amor 💖");
         return response()->json(["location" => $location, "message" => $message]);
     }
@@ -84,44 +64,6 @@ class LocationsController extends Controller
         }
 
         $location->update($data);
-
-        // Salvar mídias
-        // if ($request->hasFile('media')) {
-        //     foreach ($request->file('media') as $file) {
-        //         $type = str_starts_with($file->getMimeType(), 'video') ? 'video' : 'image';
-
-        //         $imgName = uniqid() . "." . $file->extension();
-        //         $path = public_path('files/medias');
-        //         $file->move($path, $imgName);
-
-        //         FolderMedia::create([
-        //             'location_id' => $location->id,
-        //             'user_uuid' => $request->other_user_uuid,
-        //             'name' => $request->name,
-        //             'description' => $request->description,
-        //             'date' => $request->date,
-        //             'type' => $type,
-        //             'path' => "files/medias/" . $imgName,
-        //         ]);
-        //     }
-        // }
-
-        // $imagesToDelete = json_decode($request->input('images_to_delete'), true);
-
-        // foreach ($imagesToDelete as $images) {
-        //     // Caminho absoluto no sistema de arquivos
-        //     $fullPath = public_path($images["path"]);
-
-        //     // Apaga o arquivo fisicamente se existir
-        //     if (file_exists($fullPath)) {
-        //         unlink($fullPath);
-        //     }
-
-        //     // Remove do banco
-        //     $location->media()->where('path', $images["path"])->delete();
-        // }
-
-        
         $message = UserController::personalizedMessage($userId, "Local atualizado!", "Local atualizado, meu amor 💖");
         return response()->json(["message" => $message, "location" => $location]);
     }

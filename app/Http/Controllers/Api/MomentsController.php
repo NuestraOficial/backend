@@ -4,18 +4,19 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Location;
+use App\Models\Media;
 use App\Models\Moment;
 use Illuminate\Http\Request;
 
 class MomentsController extends Controller
 {
     public function index(Request $request){
-        $moments = Moment::with("location")->get();
+        $moments = Moment::with(["location", "medias"])->get();
         return response()->json($moments);
     }
 
     public function find(Request $request, $id){
-        $moment = Moment::with("location")->find($id);
+        $moment = Moment::with(["location", "medias"])->find($id);
         return response()->json(["moment" => $moment]);
     }
 
@@ -40,6 +41,26 @@ class MomentsController extends Controller
                     'user_id' => $userId,
                 ]);
                 $request->merge(['location_id' => $location->id]);
+            }
+
+            if ($request->hasFile('media')) {
+                foreach ($request->file('media') as $file) {
+                    $type = str_starts_with($file->getMimeType(), 'video') ? 'video' : 'image';
+
+                    $imgName = uniqid() . "." . $file->extension();
+                    $path = public_path('files/medias');
+                    $file->move($path, $imgName);
+
+                    Media::create([
+                        'location_id' => $request->location_id,
+                        'user_id' => $userId,
+                        'name' => $request->name,
+                        'description' => $request->description,
+                        'date' => $request->date,
+                        'type' => $type,
+                        'path' => "files/medias/" . $imgName,
+                    ]);
+                }
             }
 
             $moment = Moment::create([
@@ -83,6 +104,34 @@ class MomentsController extends Controller
                     'user_id' => $userId,
                 ]);
                 $request->merge(['location_id' => $location->id]);
+            }
+
+            if ($request->hasFile('media')) {
+                foreach ($request->file('media') as $file) {
+                    $type = str_starts_with($file->getMimeType(), 'video') ? 'video' : 'image';
+
+                    $imgName = uniqid() . "." . $file->extension();
+                    $path = public_path('files/medias');
+                    $file->move($path, $imgName);
+
+                    Media::create([
+                        'moment_id' => $id,
+                        'location_id' => $request->location_id,
+                        'user_id' => $userId,
+                        'name' => $request->name,
+                        'description' => $request->description,
+                        'date' => $request->date,
+                        'type' => $type,
+                        'path' => "files/medias/" . $imgName,
+                    ]);
+                }
+            }   
+
+            $imagesToDelete = json_decode($request->input('images_to_delete'), true);
+            foreach ($imagesToDelete as $images) {
+                $fullPath = public_path($images["path"]); // Caminho absoluto no sistema de arquivos
+                if (file_exists($fullPath)) unlink($fullPath);
+                $moment->medias()->where('path', $images["path"])->delete(); // Remove do banco
             }
 
             $moment->update([
