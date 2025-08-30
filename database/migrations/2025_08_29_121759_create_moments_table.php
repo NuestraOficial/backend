@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-         Schema::create('location_media', function (Blueprint $table) {
+        Schema::create('moments', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('location_id');
-            $table->enum('type', ['image', 'video']);
-            $table->string('path');
+            $table->unsignedBigInteger('user_id');
+            $table->foreignId('location_id')->nullable()->constrained()->onDelete('cascade');
+            $table->string('name');
+            $table->date('date')->nullable();
+            $table->text('description')->nullable()->nullable();
             $table->timestamps();
-
-            $table->foreign('location_id')->references('id')->on('locations')->onDelete('cascade');
         });
     }
 
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('location_media');
+        Schema::dropIfExists('moments');
     }
 };

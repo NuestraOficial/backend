@@ -13,15 +13,12 @@ return new class extends Migration
     {
         Schema::create('locations', function (Blueprint $table) {
             $table->id();
-
             $table->unsignedBigInteger('user_id');
-            $table->string('title');
+            $table->string('name');
+            $table->string('media_path')->nullable();
             $table->text('description')->nullable()->nullable();
-            $table->date('date')->nullable()->nullable();
-
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
-
             $table->timestamps();
         });
     }

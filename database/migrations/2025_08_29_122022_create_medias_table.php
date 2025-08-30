@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('folder_media', function (Blueprint $table) {
+        Schema::create('medias', function (Blueprint $table) {
             $table->id();
-            $table->uuid('user_uuid');
+            $table->unsignedBigInteger('user_id');
             $table->foreignId('folder_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('location_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('moment_id')->nullable()->constrained()->onDelete('cascade');
             $table->enum('type', ['image', 'video']);
             $table->string('name')->nullable();
             $table->string('description')->nullable();
@@ -29,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('folder_media');
+        Schema::dropIfExists('medias');
     }
 };

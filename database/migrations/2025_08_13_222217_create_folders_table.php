@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('folders', function (Blueprint $table) {
             $table->id();
-            $table->uuid('user_uuid');
+            $table->unsignedBigInteger('user_id');
             $table->string("name");
             $table->string("description")->nullable();
             $table->string("total_files")->default(0);
