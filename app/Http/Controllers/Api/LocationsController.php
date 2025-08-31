@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
 class LocationsController extends Controller
 {
     public function index(Request $request){
-        $locations = Location::all();
+        $locations = Location::latest('updated_at')->get();
         return response()->json($locations);
     }
 

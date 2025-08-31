@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 class MomentsController extends Controller
 {
     public function index(Request $request){
-        $moments = Moment::with(["location", "medias"])->get();
+        $moments = Moment::with(["location", "medias"])->orderBy("date", "DESC")->get();
         return response()->json($moments);
     }
 

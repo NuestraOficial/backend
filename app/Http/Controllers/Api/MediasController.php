@@ -24,7 +24,7 @@ class MediasController extends Controller
             return response()->json(['message' =>  $message], 403);
         }
 
-        $medias = Media::where('folder_id', $folder_id)->with("folder")->get();
+        $medias = Media::where('folder_id', $folder_id)->with("folder")->orderBy("date", "DESC")->get();
 
         return response()->json(["medias" => $medias, "folder" => $folder]);
     }
