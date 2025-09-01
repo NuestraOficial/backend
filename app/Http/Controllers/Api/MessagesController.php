@@ -42,7 +42,7 @@ class MessagesController extends Controller
         ]);
 
         $message = Message::find($id);
-        if($message){
+        if(!$message){
             $messageResponse = UserController::personalizedMessage($userId, "Mensagem não encontrada!", "Mensagem não encontrada, meu amorzinho!");
             return response()->json(["message" => $messageResponse], 404);
         }
