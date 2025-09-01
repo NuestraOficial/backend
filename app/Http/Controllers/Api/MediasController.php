@@ -39,7 +39,6 @@ class MediasController extends Controller
         $user_uuid = $request->get("user_uuid");
 
         $request->validate([
-            'other_user_uuid' => 'nullable|string',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'folder_id' => 'nullable|numeric',
@@ -56,15 +55,10 @@ class MediasController extends Controller
 
         if((!$request->has("folder_id") || $request->folder_id <= 0) && $request->folder_name){
             $folder = Folder::create([
-                "user_uuid" => $user_uuid,
+                "user_id" => $userId,
                 "description" => $request->description, 
                 "name" => $request->folder_name, 
                 "total_files" => count($request->media) 
-            ]);
-
-            FolderUser::create([
-                "folder_id" => $folder->id,
-                "user_uuid" => $request->other_user_uuid,
             ]);
         }
 
@@ -72,14 +66,13 @@ class MediasController extends Controller
         if ($request->hasFile('media')) {
             foreach ($request->file('media') as $file) {
                 $type = str_starts_with($file->getMimeType(), 'video') ? 'video' : 'image';
-                // $path = $file->store('locations/media', 'public');
 
                 $imgName = uniqid() . "." . $file->extension();
                 $path = public_path('files/medias');
                 $file->move($path, $imgName);
 
                 Media::create([
-                    'user_uuid' => $request->other_user_uuid,
+                    'user_id' => $userId,
                     'folder_id' => isset($folder) ? $folder->id : null,
                     'name' => $request->name,
                     'description' => $request->description,
@@ -146,9 +139,9 @@ class MediasController extends Controller
 
     public function delete(Request $request) {
         $ids = $request->input('ids', []);
-        if (!count($ids)) return response()->json(["message" => "Nenhuma pasta selecionada"], 400);
+        if (!count($ids)) return response()->json(["message" => "Nenhuma media selecionada"], 400);
 
         Media::whereIn('id', $ids)->delete();
-        return response()->json(["message" => "Pastas removidas com sucesso"]);
+        return response()->json(["message" => "Medias removidas com sucesso"]);
     }
 }

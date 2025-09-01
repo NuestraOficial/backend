@@ -35,7 +35,7 @@ Route::middleware(['check_user_token'])->group(function () {
         Route::get('/{id}', [MediasController::class, 'find']);
         Route::get('/by-folder/{folder_id}', [MediasController::class, 'findByFolderId']);
         Route::post('/{id}', [MediasController::class, 'update']);
-        Route::delete('/{id}', [MediasController::class, 'delete']);
+        Route::delete('', [MediasController::class, 'delete']);
     });
 
     Route::group(["prefix" => "folders"], function(){
