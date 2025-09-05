@@ -13,4 +13,8 @@ class  Location extends Model
     public function medias(){
         return $this->hasMany(Media::class);
     }
+ 
+    public function moments(){
+        return $this->hasMany(related: Moment::class);
+    }
 }

@@ -20,7 +20,7 @@ class LocationsController extends Controller
 
     public function find(Request $request, $id){
         $userId = $request->get('user_id');
-        $location = Location::find($id);
+        $location = Location::with(["moments", "medias"])->find($id);
 
         if (!$location) {
             $message = UserController::personalizedMessage($userId, "Local não encontrado!", "Local não encontrado, meu amorzinho!");
