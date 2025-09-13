@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 class MessagesController extends Controller
 {
     public function index(Request $request){
-        $messages = Message::orderByDesc("date")->get();
+        $messages = Message::orderBy("date")->get();
         return response()->json($messages);
     }
     
