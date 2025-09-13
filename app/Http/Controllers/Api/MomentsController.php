@@ -52,7 +52,7 @@ class MomentsController extends Controller
                     $file->move($path, $imgName);
 
                     Media::create([
-                        'location_id' => $request->location_id,
+                        'location_id' => $request->location_id ?: null,
                         'user_id' => $userId,
                         'name' => $request->name,
                         'description' => $request->description,
@@ -65,7 +65,7 @@ class MomentsController extends Controller
 
             $moment = Moment::create([
                 'name' => $request->name,
-                'location_id' => $request->location_id,
+                'location_id' => $request->location_id ?: null,
                 'description' => $request->description,
                 'date' => $request->date,
                 'user_id' => $userId,

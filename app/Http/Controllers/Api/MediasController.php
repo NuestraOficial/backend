@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Folder;
 use App\Models\FolderUser;
+use App\Models\Location;
 use App\Models\Media;
 use Illuminate\Http\Request;
 
@@ -36,16 +37,29 @@ class MediasController extends Controller
 
     public function store(Request $request){
         $userId = $request->get('user_id');
-        $user_uuid = $request->get("user_uuid");
 
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
+            'location_id' => 'nullable|numeric',
             'folder_id' => 'nullable|numeric',
             'folder_name' => 'nullable|string|max:250',
             'date' => 'nullable|date',
-            "media*" => "file|mimes:jpeg,png,jpg,mp4,webm|max:10240"
+            "media*" => "file|mimes:jpeg,png,jpg,mp4,webm|max:10240",
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'location_name' => 'nullable',
         ]);
+
+        if($request->has("longitude") && $request->has("latitude")){
+            $location = Location::create([
+                'name' => $request->location_name,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'user_id' => $userId,
+            ]);
+            $request->merge(['location_id' => $location->id]);
+        }
 
         if($request->has("folder_id") && $request->folder_id >0){
             $folder = Folder::find($request->folder_id);
@@ -79,6 +93,7 @@ class MediasController extends Controller
                     'date' => $request->date,
                     'type' => $type,
                     'path' => "files/medias/" . $imgName,
+                    "location_id" => $request->location_id ?: null,
                 ]);
             }
         }
@@ -97,12 +112,31 @@ class MediasController extends Controller
             'folder_id' => 'nullable|numeric',
             'folder_name' => 'nullable|string|max:250',
             'date' => 'nullable|date',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'location_name' => 'nullable',
         ]);
+
+        if($request->has("longitude") && $request->has("latitude")){
+            $location = Location::create([
+                'name' => $request->location_name,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'user_id' => $userId,
+            ]);
+            $request->merge(['location_id' => $location->id]);
+        }
 
         $media = Media::find($id);
         if(!$media) return response()->json(["message" => "Registro não encontrado"], 404);
         
-        $media->update($request->only(["name", "folder_id", "description", "date"]));
+        $media->update([
+            "name" => $request->name,
+            "folder_id" => $request->folder_id,
+            "description" => $request->description,
+            "date" => $request->date,
+            "location_id" => $request->location_id ?: null,
+        ]);
 
         if($request->has("folder_id") && $request->folder_id >0){
             $folder = Folder::find($request->folder_id);
