@@ -116,7 +116,7 @@ class MomentsController extends Controller
 
                     Media::create([
                         'moment_id' => $id,
-                        'location_id' => $request->location_id,
+                        'location_id' => $request->location_id ?: null,
                         'user_id' => $userId,
                         'name' => $request->name,
                         'description' => $request->description,
@@ -136,7 +136,7 @@ class MomentsController extends Controller
 
             $moment->update([
                 'name' => $request->name,
-                'location_id' => $request->location_id,
+                'location_id' => $request->location_id ?: null,
                 'description' => $request->description,
                 'date' => $request->date,
             ]);
